@@ -2,23 +2,23 @@ import { Pressable, Text, StyleSheet } from "react-native";
 
 const PrimaryButton = ({ children, style, onPress }) => {
   return (
-    <Pressable style={[styles.button, style]} onPress={onPress}>
-      <Text style={styles.buttonText}>{children}</Text>
+    <Pressable style={[buttonStyles.base, style]} onPress={onPress}>
+      <Text style={buttonStyles.label}>{children}</Text>
     </Pressable>
   );
 };
 
 export default PrimaryButton;
 
-const styles = StyleSheet.create({
-  button: {
-    backgroundColor: "#cbd2d9",
+const buttonStyles = StyleSheet.create({
+  base: {
+    backgroundColor: "#e8c914",
     paddingVertical: 8,
     paddingHorizontal: 24,
-    borderRadius: 4,
+    borderRadius: 6,
   },
-  buttonText: {
-    color: "#324652",
-    fontSize: 22,
+  label: {
+    color: "#333",
+    fontSize: 20,
   },
 });

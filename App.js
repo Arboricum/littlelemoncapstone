@@ -67,7 +67,7 @@ export default function App({ navigation }) {
           console.error(e);
         }
 
-        Alert.alert("Success", "Successfully saved changes!");
+        Alert.alert("Success", "All changes saved!");
       },
       logout: async () => {
         try {

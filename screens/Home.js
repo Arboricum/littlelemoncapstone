@@ -20,29 +20,29 @@ import { getSectionListData, useUpdateEffect } from "../utils/utils";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import debounce from "lodash.debounce";
 
-const API_URL =
-  "https:
+const ENDPOINT =
+  "https://raw.githubusercontent.com/Meta-Mobile-Developer-PC/Working-With-Data-API/main/capstone.json";
 
-const sections = ["starters", "mains", "desserts"];
+const categories = ["starters", "mains", "desserts"];
 
-const Item = ({ name, price, description, image }) => (
+const DishCard = ({ title, cost, details, picture }) => (
   <View style={styles.item}>
     <View style={styles.itemBody}>
-      <Text style={styles.name}>{name}</Text>
-      <Text style={styles.description}>{description}</Text>
-      <Text style={styles.price}>${price}</Text>
+      <Text style={styles.name}>{title}</Text>
+      <Text style={styles.description}>{details}</Text>
+      <Text style={styles.price}>${cost}</Text>
     </View>
     <Image
       style={styles.itemImage}
       source={{
-        uri: `https:
+        uri: `https://github.com/Meta-Mobile-Developer-PC/Working-With-Data-API/blob/main/images/${picture}?raw=true`,
       }}
     />
   </View>
 );
 
 const Home = ({ navigation }) => {
-  const [profile, setProfile] = useState({
+  const [userData, setUserData] = useState({
     firstName: "",
     lastName: "",
     email: "",
@@ -53,87 +53,82 @@ const Home = ({ navigation }) => {
     newsletter: false,
     image: "",
   });
-  const [data, setData] = useState([]);
-  const [searchBarText, setSearchBarText] = useState("");
-  const [query, setQuery] = useState("");
-  const [filterSelections, setFilterSelections] = useState(
-    sections.map(() => false)
+  const [menuData, setMenuData] = useState([]);
+  const [inputText, setInputText] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [activeFilters, setActiveFilters] = useState(
+    categories.map(() => false)
   );
 
-  const fetchData = async () => {
+  const retrieveData = async () => {
     try {
-      const response = await fetch(API_URL);
-      const json = await response.json();
-      const menu = json.menu.map((item, index) => ({
-        id: index + 1,
-        name: item.name,
-        price: item.price.toString(),
-        description: item.description,
-        image: item.image,
-        category: item.category,
+      const res = await fetch(ENDPOINT);
+      const json = await res.json();
+      const structured = json.menu.map((entry, i) => ({
+        id: i + 1,
+        name: entry.name,
+        price: entry.price.toString(),
+        description: entry.description,
+        image: entry.image,
+        category: entry.category,
       }));
-      return menu;
-    } catch (error) {
-      console.error(error);
+      return structured;
+    } catch (err) {
+      console.error(err);
     }
   };
 
   useEffect(() => {
     (async () => {
-      let menuItems = [];
+      let items = [];
       try {
         await createTable();
-        menuItems = await getMenuItems();
-        if (!menuItems.length) {
-          menuItems = await fetchData();
-          saveMenuItems(menuItems);
+        items = await getMenuItems();
+        if (!items.length) {
+          items = await retrieveData();
+          saveMenuItems(items);
         }
-        const sectionListData = getSectionListData(menuItems);
-        setData(sectionListData);
-        const getProfile = await AsyncStorage.getItem("profile");
-        setProfile(JSON.parse(getProfile));
-      } catch (e) {
-        Alert.alert(e.message);
+        const organized = getSectionListData(items);
+        setMenuData(organized);
+        const savedProfile = await AsyncStorage.getItem("profile");
+        setUserData(JSON.parse(savedProfile));
+      } catch (err) {
+        Alert.alert(err.message);
       }
     })();
   }, []);
 
   useUpdateEffect(() => {
     (async () => {
-      const activeCategories = sections.filter((s, i) => {
-        if (filterSelections.every((item) => item === false)) {
-          return true;
-        }
-        return filterSelections[i];
+      const selected = categories.filter((_, idx) => {
+        if (activeFilters.every((flag) => flag === false)) return true;
+        return activeFilters[idx];
       });
       try {
-        const menuItems = await filterByQueryAndCategories(
-          query,
-          activeCategories
-        );
-        const sectionListData = getSectionListData(menuItems);
-        setData(sectionListData);
-      } catch (e) {
-        Alert.alert(e.message);
+        const filtered = await filterByQueryAndCategories(searchTerm, selected);
+        const organized = getSectionListData(filtered);
+        setMenuData(organized);
+      } catch (err) {
+        Alert.alert(err.message);
       }
     })();
-  }, [filterSelections, query]);
+  }, [activeFilters, searchTerm]);
 
-  const lookup = useCallback((q) => {
-    setQuery(q);
+  const searchHandler = useCallback((term) => {
+    setSearchTerm(term);
   }, []);
 
-  const debouncedLookup = useMemo(() => debounce(lookup, 500), [lookup]);
+  const debouncedSearch = useMemo(() => debounce(searchHandler, 500), [searchHandler]);
 
-  const handleSearchChange = (text) => {
-    setSearchBarText(text);
-    debouncedLookup(text);
+  const handleTextChange = (text) => {
+    setInputText(text);
+    debouncedSearch(text);
   };
 
-  const handleFiltersChange = async (index) => {
-    const arrayCopy = [...filterSelections];
-    arrayCopy[index] = !filterSelections[index];
-    setFilterSelections(arrayCopy);
+  const toggleFilter = async (i) => {
+    const copy = [...activeFilters];
+    copy[i] = !activeFilters[i];
+    setActiveFilters(copy);
   };
 
   return (
@@ -147,15 +142,15 @@ const Home = ({ navigation }) => {
         />
         <Pressable
           style={styles.avatar}
-          onPress={() => navigation.navigate("Account")}
+          onPress={() => navigation.navigate("Profile")}
         >
-          {profile.image !== "" ? (
-            <Image source={{ uri: profile.image }} style={styles.avatarImage} />
+          {userData.image !== "" ? (
+            <Image source={{ uri: userData.image }} style={styles.avatarImage} />
           ) : (
             <View style={styles.avatarEmpty}>
               <Text style={styles.avatarEmptyText}>
-                {profile.firstName && Array.from(profile.firstName)[0]}
-                {profile.lastName && Array.from(profile.lastName)[0]}
+                {userData.firstName && Array.from(userData.firstName)[0]}
+                {userData.lastName && Array.from(userData.lastName)[0]}
               </Text>
             </View>
           )}
@@ -167,8 +162,7 @@ const Home = ({ navigation }) => {
           <View style={styles.heroContent}>
             <Text style={styles.heroHeader2}>Chicago</Text>
             <Text style={styles.heroText}>
-              We are a family owned Mediterranean restaurant, focused on
-              traditional recipes served with a modern twist.
+              A cozy Mediterranean place where family traditions meet modern flavors.
             </Text>
           </View>
           <Image
@@ -179,32 +173,32 @@ const Home = ({ navigation }) => {
           />
         </View>
         <Searchbar
-          placeholder="Find"
-          placeholderTextColor="#333333"
-          onChangeText={handleSearchChange}
-          value={searchBarText}
+          placeholder="Search"
+          placeholderTextColor="#444"
+          onChangeText={handleTextChange}
+          value={inputText}
           style={styles.searchBar}
-          iconColor="#333333"
-          inputStyle={{ color: "#333333" }}
+          iconColor="#444"
+          inputStyle={{ color: "#444" }}
           elevation={0}
         />
       </View>
-      <Text style={styles.delivery}>ORDER FOR DELIVERY!</Text>
+      <Text style={styles.delivery}>GET YOUR FAVORITES DELIVERED!</Text>
       <Filters
-        selections={filterSelections}
-        onChange={handleFiltersChange}
-        sections={sections}
+        selections={activeFilters}
+        onChange={toggleFilter}
+        sections={categories}
       />
       <SectionList
         style={styles.sectionList}
-        sections={data}
+        sections={menuData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
-          <Item
-            name={item.name}
-            price={item.price}
-            description={item.description}
-            image={item.image}
+          <DishCard
+            title={item.name}
+            cost={item.price}
+            details={item.description}
+            picture={item.image}
           />
         )}
         renderSectionHeader={({ section: { name } }) => (
@@ -220,14 +214,14 @@ export default Home;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#fcfcfc",
     paddingTop: 18,
   },
   header: {
     padding: 12,
     flexDirection: "row",
     justifyContent: "center",
-    backgroundColor: "#dee3e9",
+    backgroundColor: "#d9e0e5",
   },
   logo: {
     height: 50,
@@ -239,7 +233,7 @@ const styles = StyleSheet.create({
   },
   searchBar: {
     marginTop: 15,
-    backgroundColor: "#e4e4e4",
+    backgroundColor: "#ededed",
     shadowRadius: 0,
     shadowOpacity: 0,
   },
@@ -257,21 +251,21 @@ const styles = StyleSheet.create({
   itemHeader: {
     fontSize: 24,
     paddingVertical: 8,
-    color: "#495e57",
+    color: "#46645b",
     backgroundColor: "#fff",
   },
   name: {
     fontSize: 20,
-    color: "#000000",
+    color: "#111",
     paddingBottom: 5,
   },
   description: {
-    color: "#495e57",
+    color: "#46645b",
     paddingRight: 5,
   },
   price: {
     fontSize: 20,
-    color: "#EE9972",
+    color: "#ed9c72",
     paddingTop: 5,
   },
   itemImage: {
@@ -293,24 +287,24 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
-    backgroundColor: "#0b9a6a",
+    backgroundColor: "#12805e",
     alignItems: "center",
     justifyContent: "center",
   },
   heroSection: {
-    backgroundColor: "#495e57",
+    backgroundColor: "#46645b",
     padding: 15,
   },
   heroHeader: {
-    color: "#f4ce14",
+    color: "#e8c914",
     fontSize: 54,
   },
   heroHeader2: {
-    color: "#fff",
+    color: "#fdfdfd",
     fontSize: 30,
   },
   heroText: {
-    color: "#fff",
+    color: "#fdfdfd",
     fontSize: 14,
   },
   heroBody: {

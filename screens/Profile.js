@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext, useCallback } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import {
   View,
   Image,
@@ -16,68 +16,57 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as ImagePicker from "expo-image-picker";
 import Checkbox from "expo-checkbox";
 
-const Account = () => {
-  const [profile, setProfile] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    phoneNumber: "",
-    orderStatuses: false,
-    passwordChanges: false,
-    specialOffers: false,
+const Profile = () => {
+  const [userForm, setUserForm] = useState({
+    first: "",
+    last: "",
+    mail: "",
+    phone: "",
+    orders: false,
+    password: false,
+    offers: false,
     newsletter: false,
-    image: "",
+    avatar: "",
   });
-  const [discard, setDiscard] = useState(false);
+
+  const [refresh, triggerRefresh] = useState(false);
 
   useEffect(() => {
     (async () => {
       try {
-        const getProfile = await AsyncStorage.getItem("profile");
-        setProfile(JSON.parse(getProfile));
-        setDiscard(false);
-      } catch (e) {
-        console.error(e);
+        const saved = await AsyncStorage.getItem("profile");
+        setUserForm(JSON.parse(saved));
+        triggerRefresh(false);
+      } catch (err) {
+        console.error(err);
       }
     })();
-  }, [discard]);
+  }, [refresh]);
 
-  const validateName = (name) => {
-    if (name.length > 0) {
-      return name.match(/[^a-zA-Z]/);
-    } else {
-      return true;
-    }
-  };
+  const validateName = (n) => (n.length > 0 ? n.match(/[^a-zA-Z]/) : true);
 
-  const validateNumber = (number) => {
-    if (isNaN(number)) {
-      return false;
-    } else if (number.length == 10) {
-      return true;
-    }
-  };
+  const validatePhone = (num) =>
+    !isNaN(num) && num.length === 10;
 
-  const { update } = useContext(AuthContext);
-  const { logout } = useContext(AuthContext);
+  const { update, logout } = useContext(AuthContext);
 
-  const updateProfile = (key, value) => {
-    setProfile((prevState) => ({
-      ...prevState,
-      [key]: value,
+  const updateField = (key, val) => {
+    setUserForm((prev) => ({
+      ...prev,
+      [key]: val,
     }));
   };
 
-  const getIsFormValid = () => {
+  const isValid = () => {
     return (
-      !validateName(profile.firstName) &&
-      !validateName(profile.lastName) &&
-      validateEmail(profile.email) &&
-      validateNumber(profile.phoneNumber)
+      !validateName(userForm.first) &&
+      !validateName(userForm.last) &&
+      validateEmail(userForm.mail) &&
+      validatePhone(userForm.phone)
     );
   };
 
-  const pickImage = async () => {
+  const pickAvatar = async () => {
     let result = await ImagePicker.launchImageLibraryAsync({
       mediaTypes: ImagePicker.MediaTypeOptions.All,
       allowsEditing: true,
@@ -86,17 +75,17 @@ const Account = () => {
     });
 
     if (!result.canceled) {
-      setProfile((prevState) => ({
-        ...prevState,
-        ["image"]: result.assets[0].uri,
+      setUserForm((prev) => ({
+        ...prev,
+        avatar: result.assets[0].uri,
       }));
     }
   };
 
-  const removeImage = () => {
-    setProfile((prevState) => ({
-      ...prevState,
-      ["image"]: "",
+  const clearAvatar = () => {
+    setUserForm((prev) => ({
+      ...prev,
+      avatar: "",
     }));
   };
 
@@ -113,237 +102,209 @@ const Account = () => {
           accessibilityLabel={"Little Lemon Logo"}
         />
       </View>
-      <ScrollView style={styles.viewScroll}>
-        <Text style={styles.headertext}>Personal Information</Text>
-        <Text style={styles.text}>Avatar</Text>
-        <View style={styles.avatarContainer}>
-          {profile.image ? (
-            <Image source={{ uri: profile.image }} style={styles.avatarImage} />
+      <ScrollView style={styles.scroll}>
+        <Text style={styles.heading}>Your Information</Text>
+        <Text style={styles.label}>Avatar</Text>
+        <View style={styles.avatarGroup}>
+          {userForm.avatar ? (
+            <Image source={{ uri: userForm.avatar }} style={styles.avatarImage} />
           ) : (
             <View style={styles.avatarEmpty}>
               <Text style={styles.avatarEmptyText}>
-                {profile.firstName && Array.from(profile.firstName)[0]}
-                {profile.lastName && Array.from(profile.lastName)[0]}
+                {userForm.first && Array.from(userForm.first)[0]}
+                {userForm.last && Array.from(userForm.last)[0]}
               </Text>
             </View>
           )}
-          <View style={styles.avatarButtons}>
-            <Pressable
-              style={styles.changeBtn}
-              title="Pick an image from camera roll"
-              onPress={pickImage}
-            >
-              <Text style={styles.saveBtnText}>Change</Text>
+          <View style={styles.avatarControls}>
+            <Pressable style={styles.primaryBtn} onPress={pickAvatar}>
+              <Text style={styles.primaryText}>Change</Text>
             </Pressable>
-            <Pressable
-              style={styles.removeBtn}
-              title="Pick an image from camera roll"
-              onPress={removeImage}
-            >
-              <Text style={styles.discardBtnText}>Remove</Text>
+            <Pressable style={styles.secondaryBtn} onPress={clearAvatar}>
+              <Text style={styles.secondaryText}>Remove</Text>
             </Pressable>
           </View>
         </View>
-        <Text style={styles.text}>First name</Text>
+        <Text style={styles.label}>First Name</Text>
         <TextInput
-          style={styles.inputBox}
-          value={profile.firstName}
-          onChangeText={(newValue) => updateProfile("firstName", newValue)}
-          placeholder={"First Name"}
+          style={styles.input}
+          value={userForm.first}
+          onChangeText={(val) => updateField("first", val)}
+          placeholder="First Name"
         />
-        <Text style={styles.text}>Last name</Text>
+        <Text style={styles.label}>Last Name</Text>
         <TextInput
-          style={styles.inputBox}
-          value={profile.lastName}
-          onChangeText={(newValue) => updateProfile("lastName", newValue)}
-          placeholder={"Last Name"}
+          style={styles.input}
+          value={userForm.last}
+          onChangeText={(val) => updateField("last", val)}
+          placeholder="Last Name"
         />
-        <Text style={styles.text}>Email</Text>
+        <Text style={styles.label}>Email</Text>
         <TextInput
-          style={styles.inputBox}
-          value={profile.email}
+          style={styles.input}
+          value={userForm.mail}
           keyboardType="email-address"
-          onChangeText={(newValue) => updateProfile("email", newValue)}
-          placeholder={"Email"}
+          onChangeText={(val) => updateField("mail", val)}
+          placeholder="Email"
         />
-        <Text style={styles.text}>Phone number</Text>
+        <Text style={styles.label}>Phone</Text>
         <TextInput
-          style={styles.inputBox}
-          value={profile.phoneNumber}
+          style={styles.input}
+          value={userForm.phone}
           keyboardType="phone-pad"
-          onChangeText={(newValue) => updateProfile("phoneNumber", newValue)}
-          placeholder={"Phone number"}
+          onChangeText={(val) => updateField("phone", val)}
+          placeholder="Phone number"
         />
-        <Text style={styles.headertext}>Email notifications</Text>
-        <View style={styles.section}>
+        <Text style={styles.heading}>Notifications</Text>
+        <View style={styles.row}>
           <Checkbox
             style={styles.checkbox}
-            value={profile.orderStatuses}
-            onValueChange={(newValue) =>
-              updateProfile("orderStatuses", newValue)
-            }
-            color={"#495e57"}
+            value={userForm.orders}
+            onValueChange={(val) => updateField("orders", val)}
+            color={"#46645b"}
           />
-          <Text style={styles.paragraph}>Purchase statuses</Text>
+          <Text style={styles.text}>Order statuses</Text>
         </View>
-        <View style={styles.section}>
+        <View style={styles.row}>
           <Checkbox
             style={styles.checkbox}
-            value={profile.passwordChanges}
-            onValueChange={(newValue) =>
-              updateProfile("passwordChanges", newValue)
-            }
-            color={"#495e57"}
+            value={userForm.password}
+            onValueChange={(val) => updateField("password", val)}
+            color={"#46645b"}
           />
-          <Text style={styles.paragraph}>Password changes</Text>
+          <Text style={styles.text}>Password changes</Text>
         </View>
-        <View style={styles.section}>
+        <View style={styles.row}>
           <Checkbox
             style={styles.checkbox}
-            value={profile.specialOffers}
-            onValueChange={(newValue) =>
-              updateProfile("specialOffers", newValue)
-            }
-            color={"#495e57"}
+            value={userForm.offers}
+            onValueChange={(val) => updateField("offers", val)}
+            color={"#46645b"}
           />
-          <Text style={styles.paragraph}>Special offers</Text>
+          <Text style={styles.text}>Special offers</Text>
         </View>
-        <View style={styles.section}>
+        <View style={styles.row}>
           <Checkbox
             style={styles.checkbox}
-            value={profile.newsletter}
-            onValueChange={(newValue) => updateProfile("newsletter", newValue)}
-            color={"#495e57"}
+            value={userForm.newsletter}
+            onValueChange={(val) => updateField("newsletter", val)}
+            color={"#46645b"}
           />
-          <Text style={styles.paragraph}>Newsletter</Text>
+          <Text style={styles.text}>Newsletter</Text>
         </View>
-        <Pressable style={styles.btn} onPress={() => logout()}>
-          <Text style={styles.btntext}>Log out</Text>
+        <Pressable style={styles.logoutBtn} onPress={() => logout()}>
+          <Text style={styles.logoutText}>Log out</Text>
         </Pressable>
-        <View style={styles.buttons}>
-          <Pressable style={styles.discardBtn} onPress={() => setDiscard(true)}>
-            <Text style={styles.discardBtnText}>Discard changes</Text>
+        <View style={styles.actionRow}>
+          <Pressable style={styles.secondaryBtn} onPress={() => triggerRefresh(true)}>
+            <Text style={styles.secondaryText}>Discard changes</Text>
           </Pressable>
           <Pressable
-            style={[styles.saveBtn, getIsFormValid() ? "" : styles.btnDisabled]}
-            onPress={() => update(profile)}
-            disabled={!getIsFormValid()}
+            style={[styles.primaryBtn, !isValid() && styles.disabled]}
+            onPress={() => update(userForm)}
+            disabled={!isValid()}
           >
-            <Text style={styles.saveBtnText}>Save changes</Text>
+            <Text style={styles.primaryText}>Save changes</Text>
           </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
   );
 };
-("");
-export default Account;
+
+export default Profile;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#fcfcfc",
   },
   header: {
     padding: 12,
     flexDirection: "row",
     justifyContent: "center",
-    backgroundColor: "#dee3e9",
+    backgroundColor: "#d9e0e5",
   },
   logo: {
     height: 50,
     width: 150,
     resizeMode: "contain",
   },
-  viewScroll: {
+  scroll: {
     flex: 1,
     padding: 10,
   },
-  headertext: {
+  heading: {
     fontSize: 22,
     paddingBottom: 10,
   },
-  text: {
+  label: {
     fontSize: 16,
     marginBottom: 5,
   },
-  inputBox: {
+  input: {
     alignSelf: "stretch",
     marginBottom: 10,
     borderWidth: 1,
     padding: 10,
     fontSize: 16,
     borderRadius: 9,
-    borderColor: "#dfdfe5",
+    borderColor: "#dcdcdc",
+    backgroundColor: "#f5f5f5",
   },
-  btn: {
-    backgroundColor: "#f4ce14",
+  logoutBtn: {
+    backgroundColor: "#e8c914",
     borderRadius: 9,
     alignSelf: "stretch",
     marginVertical: 18,
     padding: 10,
     borderWidth: 1,
-    borderColor: "#cc9a22",
+    borderColor: "#b89f1a",
   },
-  btnDisabled: {
-    backgroundColor: "#98b3aa",
+  logoutText: {
+    fontSize: 22,
+    color: "#333",
+    alignSelf: "center",
   },
-  buttons: {
-    display: "flex",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
-    marginBottom: 60,
-  },
-  saveBtn: {
+  primaryBtn: {
     flex: 1,
-    backgroundColor: "#495e57",
+    backgroundColor: "#46645b",
     borderRadius: 9,
     alignSelf: "stretch",
     padding: 10,
     borderWidth: 1,
-    borderColor: "#3f554d",
+    borderColor: "#3b4f47",
   },
-  saveBtnText: {
+  primaryText: {
     fontSize: 18,
-    color: "#FFFFFF",
+    color: "#fff",
     alignSelf: "center",
   },
-  discardBtn: {
+  secondaryBtn: {
     flex: 1,
-    backgroundColor: "#FFFFFF",
+    backgroundColor: "#ffffff",
     borderRadius: 9,
-    alignSelf: "stretch",
     marginRight: 18,
     padding: 10,
     borderWidth: 1,
-    borderColor: "#83918c",
+    borderColor: "#9aa8a0",
   },
-  discardBtnText: {
+  secondaryText: {
     fontSize: 18,
     color: "#3e524b",
     alignSelf: "center",
   },
-  btntext: {
-    fontSize: 22,
-    color: "#3e524b",
-    alignSelf: "center",
+  disabled: {
+    backgroundColor: "#b8c4bd",
   },
-  section: {
+  row: {
     flexDirection: "row",
     alignItems: "center",
-  },
-  paragraph: {
-    fontSize: 15,
   },
   checkbox: {
     margin: 8,
   },
-  error: {
-    color: "#d14747",
-    fontWeight: "bold",
-  },
-  avatarContainer: {
+  avatarGroup: {
     flexDirection: "row",
     alignItems: "center",
     marginVertical: 10,
@@ -357,31 +318,22 @@ const styles = StyleSheet.create({
     width: 80,
     height: 80,
     borderRadius: 40,
-    backgroundColor: "#0b9a6a",
+    backgroundColor: "#12805e",
     alignItems: "center",
     justifyContent: "center",
   },
   avatarEmptyText: {
     fontSize: 32,
-    color: "#FFFFFF",
+    color: "#fff",
     fontWeight: "bold",
   },
-  avatarButtons: {
+  avatarControls: {
     flexDirection: "row",
   },
-  changeBtn: {
-    backgroundColor: "#495e57",
-    borderRadius: 9,
-    marginHorizontal: 18,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#3f554d",
-  },
-  removeBtn: {
-    backgroundColor: "#FFFFFF",
-    borderRadius: 9,
-    padding: 10,
-    borderWidth: 1,
-    borderColor: "#83918c",
+  actionRow: {
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center",
+    marginBottom: 60,
   },
 });

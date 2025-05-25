@@ -1,4 +1,4 @@
-import React, { useState, useRef, useContext, useCallback } from "react";
+import React, { useState, useRef, useContext } from "react";
 import {
   View,
   Image,
@@ -16,17 +16,16 @@ import Constants from "expo-constants";
 import { AuthContext } from "../contexts/AuthContext";
 
 const Onboarding = () => {
-  const [firstName, onChangeFirstName] = useState("");
-  const [lastName, onChangeLastName] = useState("");
-  const [email, onChangeEmail] = useState("");
+  const [first, setFirst] = useState("");
+  const [last, setLast] = useState("");
+  const [mail, setMail] = useState("");
 
-  const isEmailValid = validateEmail(email);
-  const isFirstNameValid = validateName(firstName);
-  const isLastNameValid = validateName(lastName);
-  const viewPagerRef = useRef(PagerView);
+  const isFirstValid = validateName(first);
+  const isLastValid = validateName(last);
+  const isMailValid = validateEmail(mail);
 
+  const pager = useRef(PagerView);
   const { onboard } = useContext(AuthContext);
-
 
   return (
     <KeyboardAvoidingView
@@ -41,34 +40,34 @@ const Onboarding = () => {
           accessibilityLabel={"Little Lemon Logo"}
         />
       </View>
-      <Text style={styles.welcomeText}>Let us get to know you</Text>
+      <Text style={styles.welcomeText}>We'd love to know more about you</Text>
       <PagerView
         style={styles.viewPager}
         scrollEnabled={false}
         initialPage={0}
-        ref={viewPagerRef}
+        ref={pager}
       >
         <View style={styles.page} key="1">
           <View style={styles.pageContainer}>
             <Text style={styles.text}>First Name</Text>
             <TextInput
               style={styles.inputBox}
-              value={firstName}
-              onChangeText={onChangeFirstName}
-              placeholder={"First Name"}
+              value={first}
+              onChangeText={setFirst}
+              placeholder="First Name"
             />
           </View>
           <View style={styles.pageIndicator}>
-            <View style={[styles.pageDot, styles.pageDotActive]}></View>
-            <View style={styles.pageDot}></View>
-            <View style={styles.pageDot}></View>
+            <View style={[styles.pageDot, styles.pageDotActive]} />
+            <View style={styles.pageDot} />
+            <View style={styles.pageDot} />
           </View>
           <Pressable
-            style={[styles.btn, isFirstNameValid ? "" : styles.btnDisabled]}
-            onPress={() => viewPagerRef.current.setPage(1)}
-            disabled={!isFirstNameValid}
+            style={[styles.btn, !isFirstValid && styles.btnDisabled]}
+            onPress={() => pager.current.setPage(1)}
+            disabled={!isFirstValid}
           >
-            <Text style={styles.btntext}>Next</Text>
+            <Text style={styles.btnText}>Next</Text>
           </Pressable>
         </View>
         <View style={styles.page} key="2">
@@ -76,32 +75,29 @@ const Onboarding = () => {
             <Text style={styles.text}>Last Name</Text>
             <TextInput
               style={styles.inputBox}
-              value={lastName}
-              onChangeText={onChangeLastName}
-              placeholder={"Last Name"}
+              value={last}
+              onChangeText={setLast}
+              placeholder="Last Name"
             />
           </View>
           <View style={styles.pageIndicator}>
-            <View style={styles.pageDot}></View>
-            <View style={[styles.pageDot, styles.pageDotActive]}></View>
-            <View style={styles.pageDot}></View>
+            <View style={styles.pageDot} />
+            <View style={[styles.pageDot, styles.pageDotActive]} />
+            <View style={styles.pageDot} />
           </View>
           <View style={styles.buttons}>
             <Pressable
               style={styles.halfBtn}
-              onPress={() => viewPagerRef.current.setPage(0)}
+              onPress={() => pager.current.setPage(0)}
             >
-              <Text style={styles.btntext}>Back</Text>
+              <Text style={styles.btnText}>Back</Text>
             </Pressable>
             <Pressable
-              style={[
-                styles.halfBtn,
-                isLastNameValid ? "" : styles.btnDisabled,
-              ]}
-              onPress={() => viewPagerRef.current.setPage(2)}
-              disabled={!isLastNameValid}
+              style={[styles.halfBtn, !isLastValid && styles.btnDisabled]}
+              onPress={() => pager.current.setPage(2)}
+              disabled={!isLastValid}
             >
-              <Text style={styles.btntext}>Next</Text>
+              <Text style={styles.btnText}>Next</Text>
             </Pressable>
           </View>
         </View>
@@ -110,30 +106,30 @@ const Onboarding = () => {
             <Text style={styles.text}>Email</Text>
             <TextInput
               style={styles.inputBox}
-              value={email}
-              onChangeText={onChangeEmail}
-              placeholder={"Email"}
+              value={mail}
+              onChangeText={setMail}
+              placeholder="Email"
               keyboardType="email-address"
             />
           </View>
           <View style={styles.pageIndicator}>
-            <View style={styles.pageDot}></View>
-            <View style={styles.pageDot}></View>
-            <View style={[styles.pageDot, styles.pageDotActive]}></View>
+            <View style={styles.pageDot} />
+            <View style={styles.pageDot} />
+            <View style={[styles.pageDot, styles.pageDotActive]} />
           </View>
           <View style={styles.buttons}>
             <Pressable
               style={styles.halfBtn}
-              onPress={() => viewPagerRef.current.setPage(1)}
+              onPress={() => pager.current.setPage(1)}
             >
-              <Text style={styles.btntext}>Back</Text>
+              <Text style={styles.btnText}>Back</Text>
             </Pressable>
             <Pressable
-              style={[styles.halfBtn, isEmailValid ? "" : styles.btnDisabled]}
-              onPress={() => onboard({ firstName, lastName, email })}
-              disabled={!isEmailValid}
+              style={[styles.halfBtn, !isMailValid && styles.btnDisabled]}
+              onPress={() => onboard({ firstName: first, lastName: last, email: mail })}
+              disabled={!isMailValid}
             >
-              <Text style={styles.btntext}>Submit</Text>
+              <Text style={styles.btnText}>Submit</Text>
             </Pressable>
           </View>
         </View>
@@ -145,14 +141,14 @@ const Onboarding = () => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: "#fff",
+    backgroundColor: "#fcfcfc",
     paddingTop: Constants.statusBarHeight,
   },
   header: {
     padding: 12,
     flexDirection: "row",
     justifyContent: "center",
-    backgroundColor: "#dee3e9",
+    backgroundColor: "#d9e0e5",
   },
   logo: {
     height: 50,
@@ -173,16 +169,16 @@ const styles = StyleSheet.create({
   welcomeText: {
     fontSize: 40,
     paddingVertical: 60,
-    color: "#495E57",
+    color: "#46645b",
     textAlign: "center",
   },
   text: {
     fontSize: 24,
-    color: "#495E57",
+    color: "#46645b",
   },
   inputBox: {
-    borderColor: "#EDEFEE",
-    backgroundColor: "#EDEFEE",
+    borderColor: "#e4e4e4",
+    backgroundColor: "#e4e4e4",
     alignSelf: "stretch",
     height: 50,
     margin: 18,
@@ -192,8 +188,8 @@ const styles = StyleSheet.create({
     borderRadius: 9,
   },
   btn: {
-    backgroundColor: "#f4ce14",
-    borderColor: "#f4ce14",
+    backgroundColor: "#e8c914",
+    borderColor: "#e8c914",
     borderRadius: 9,
     alignSelf: "stretch",
     marginHorizontal: 18,
@@ -202,10 +198,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
   },
   btnDisabled: {
-    backgroundColor: "#f1f4f7",
+    backgroundColor: "#d9d9d9",
   },
   buttons: {
-    display: "flex",
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -214,24 +209,21 @@ const styles = StyleSheet.create({
   },
   halfBtn: {
     flex: 1,
-    borderColor: "#f4ce14",
-    backgroundColor: "#f4ce14",
+    borderColor: "#e8c914",
+    backgroundColor: "#e8c914",
     borderRadius: 9,
     alignSelf: "stretch",
     marginRight: 18,
     padding: 10,
     borderWidth: 1,
   },
-  btntext: {
+  btnText: {
     fontSize: 22,
     color: "#333",
     alignSelf: "center",
   },
   pageIndicator: {
-    display: "flex",
     flexDirection: "row",
-    justifyContent: "space-between",
-    alignItems: "center",
     justifyContent: "center",
     marginBottom: 20,
   },
@@ -243,7 +235,7 @@ const styles = StyleSheet.create({
     borderRadius: 11,
   },
   pageDotActive: {
-    backgroundColor: "#f4ce14",
+    backgroundColor: "#e8c914",
     width: 22,
     height: 22,
     borderRadius: 11,
