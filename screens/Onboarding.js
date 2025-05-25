@@ -29,107 +29,109 @@ const Onboarding = () => {
 
   return (
     <KeyboardAvoidingView
-      style={styles.container}
+      style={styles.wrapper}
       behavior={Platform.OS === "ios" ? "padding" : "height"}
     >
-      <View style={styles.header}>
+      <View style={styles.topBar}>
         <Image
-          style={styles.logo}
+          style={styles.brand}
           source={require("../assets/Logo.png")}
           accessible={true}
           accessibilityLabel={"Little Lemon Logo"}
         />
       </View>
-      <Text style={styles.welcomeText}>We'd love to know more about you</Text>
+      <Text style={styles.introText}>We'd love to know more about you</Text>
       <PagerView
-        style={styles.viewPager}
+        style={styles.pageViewer}
         scrollEnabled={false}
         initialPage={0}
         ref={pager}
       >
-        <View style={styles.page} key="1">
-          <View style={styles.pageContainer}>
-            <Text style={styles.text}>First Name</Text>
+        <View style={styles.pageSlide} key="1">
+          <View style={styles.centerBlock}>
+            <Text style={styles.label}>First Name</Text>
             <TextInput
-              style={styles.inputBox}
+              style={styles.input}
               value={first}
               onChangeText={setFirst}
               placeholder="First Name"
             />
           </View>
-          <View style={styles.pageIndicator}>
-            <View style={[styles.pageDot, styles.pageDotActive]} />
-            <View style={styles.pageDot} />
-            <View style={styles.pageDot} />
+          <View style={styles.paginationDots}>
+            <View style={[styles.dot, styles.activeDot]} />
+            <View style={styles.dot} />
+            <View style={styles.dot} />
           </View>
           <Pressable
-            style={[styles.btn, !isFirstValid && styles.btnDisabled]}
+            style={[styles.fullButton, !isFirstValid && styles.disabled]}
             onPress={() => pager.current.setPage(1)}
             disabled={!isFirstValid}
           >
-            <Text style={styles.btnText}>Next</Text>
+            <Text style={styles.btnLabel}>Next</Text>
           </Pressable>
         </View>
-        <View style={styles.page} key="2">
-          <View style={styles.pageContainer}>
-            <Text style={styles.text}>Last Name</Text>
+
+        <View style={styles.pageSlide} key="2">
+          <View style={styles.centerBlock}>
+            <Text style={styles.label}>Last Name</Text>
             <TextInput
-              style={styles.inputBox}
+              style={styles.input}
               value={last}
               onChangeText={setLast}
               placeholder="Last Name"
             />
           </View>
-          <View style={styles.pageIndicator}>
-            <View style={styles.pageDot} />
-            <View style={[styles.pageDot, styles.pageDotActive]} />
-            <View style={styles.pageDot} />
+          <View style={styles.paginationDots}>
+            <View style={styles.dot} />
+            <View style={[styles.dot, styles.activeDot]} />
+            <View style={styles.dot} />
           </View>
-          <View style={styles.buttons}>
+          <View style={styles.rowButtons}>
             <Pressable
-              style={styles.halfBtn}
+              style={styles.halfButton}
               onPress={() => pager.current.setPage(0)}
             >
-              <Text style={styles.btnText}>Back</Text>
+              <Text style={styles.btnLabel}>Back</Text>
             </Pressable>
             <Pressable
-              style={[styles.halfBtn, !isLastValid && styles.btnDisabled]}
+              style={[styles.halfButton, !isLastValid && styles.disabled]}
               onPress={() => pager.current.setPage(2)}
               disabled={!isLastValid}
             >
-              <Text style={styles.btnText}>Next</Text>
+              <Text style={styles.btnLabel}>Next</Text>
             </Pressable>
           </View>
         </View>
-        <View style={styles.page} key="3">
-          <View style={styles.pageContainer}>
-            <Text style={styles.text}>Email</Text>
+
+        <View style={styles.pageSlide} key="3">
+          <View style={styles.centerBlock}>
+            <Text style={styles.label}>Email</Text>
             <TextInput
-              style={styles.inputBox}
+              style={styles.input}
               value={mail}
               onChangeText={setMail}
               placeholder="Email"
               keyboardType="email-address"
             />
           </View>
-          <View style={styles.pageIndicator}>
-            <View style={styles.pageDot} />
-            <View style={styles.pageDot} />
-            <View style={[styles.pageDot, styles.pageDotActive]} />
+          <View style={styles.paginationDots}>
+            <View style={styles.dot} />
+            <View style={styles.dot} />
+            <View style={[styles.dot, styles.activeDot]} />
           </View>
-          <View style={styles.buttons}>
+          <View style={styles.rowButtons}>
             <Pressable
-              style={styles.halfBtn}
+              style={styles.halfButton}
               onPress={() => pager.current.setPage(1)}
             >
-              <Text style={styles.btnText}>Back</Text>
+              <Text style={styles.btnLabel}>Back</Text>
             </Pressable>
             <Pressable
-              style={[styles.halfBtn, !isMailValid && styles.btnDisabled]}
+              style={[styles.halfButton, !isMailValid && styles.disabled]}
               onPress={() => onboard({ firstName: first, lastName: last, email: mail })}
               disabled={!isMailValid}
             >
-              <Text style={styles.btnText}>Submit</Text>
+              <Text style={styles.btnLabel}>Submit</Text>
             </Pressable>
           </View>
         </View>
@@ -139,44 +141,44 @@ const Onboarding = () => {
 };
 
 const styles = StyleSheet.create({
-  container: {
+  wrapper: {
     flex: 1,
     backgroundColor: "#fcfcfc",
     paddingTop: Constants.statusBarHeight,
   },
-  header: {
+  topBar: {
     padding: 12,
     flexDirection: "row",
     justifyContent: "center",
     backgroundColor: "#d9e0e5",
   },
-  logo: {
+  brand: {
     height: 50,
     width: 150,
     resizeMode: "contain",
   },
-  viewPager: {
+  pageViewer: {
     flex: 1,
   },
-  page: {
+  pageSlide: {
     justifyContent: "center",
   },
-  pageContainer: {
+  centerBlock: {
     flex: 1,
     justifyContent: "center",
     alignItems: "center",
   },
-  welcomeText: {
+  introText: {
     fontSize: 40,
     paddingVertical: 60,
     color: "#46645b",
     textAlign: "center",
   },
-  text: {
+  label: {
     fontSize: 24,
     color: "#46645b",
   },
-  inputBox: {
+  input: {
     borderColor: "#e4e4e4",
     backgroundColor: "#e4e4e4",
     alignSelf: "stretch",
@@ -187,7 +189,7 @@ const styles = StyleSheet.create({
     fontSize: 20,
     borderRadius: 9,
   },
-  btn: {
+  fullButton: {
     backgroundColor: "#e8c914",
     borderColor: "#e8c914",
     borderRadius: 9,
@@ -197,17 +199,17 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
   },
-  btnDisabled: {
+  disabled: {
     backgroundColor: "#d9d9d9",
   },
-  buttons: {
+  rowButtons: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
     marginLeft: 18,
     marginBottom: 60,
   },
-  halfBtn: {
+  halfButton: {
     flex: 1,
     borderColor: "#e8c914",
     backgroundColor: "#e8c914",
@@ -217,24 +219,24 @@ const styles = StyleSheet.create({
     padding: 10,
     borderWidth: 1,
   },
-  btnText: {
+  btnLabel: {
     fontSize: 22,
     color: "#333",
     alignSelf: "center",
   },
-  pageIndicator: {
+  paginationDots: {
     flexDirection: "row",
     justifyContent: "center",
     marginBottom: 20,
   },
-  pageDot: {
+  dot: {
     backgroundColor: "#67788a",
     width: 22,
     height: 22,
     marginHorizontal: 10,
     borderRadius: 11,
   },
-  pageDotActive: {
+  activeDot: {
     backgroundColor: "#e8c914",
     width: 22,
     height: 22,

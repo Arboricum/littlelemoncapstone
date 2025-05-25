@@ -26,14 +26,14 @@ const ENDPOINT =
 const categories = ["starters", "mains", "desserts"];
 
 const DishCard = ({ title, cost, details, picture }) => (
-  <View style={styles.item}>
-    <View style={styles.itemBody}>
-      <Text style={styles.name}>{title}</Text>
-      <Text style={styles.description}>{details}</Text>
-      <Text style={styles.price}>${cost}</Text>
+  <View style={styles.dishContainer}>
+    <View style={styles.dishTextBlock}>
+      <Text style={styles.dishName}>{title}</Text>
+      <Text style={styles.dishDesc}>{details}</Text>
+      <Text style={styles.dishPrice}>${cost}</Text>
     </View>
     <Image
-      style={styles.itemImage}
+      style={styles.dishImage}
       source={{
         uri: `https://github.com/Meta-Mobile-Developer-PC/Working-With-Data-API/blob/main/images/${picture}?raw=true`,
       }}
@@ -53,6 +53,7 @@ const Home = ({ navigation }) => {
     newsletter: false,
     image: "",
   });
+
   const [menuData, setMenuData] = useState([]);
   const [inputText, setInputText] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -132,23 +133,23 @@ const Home = ({ navigation }) => {
   };
 
   return (
-    <View style={styles.container}>
-      <View style={styles.header}>
+    <View style={styles.pageRoot}>
+      <View style={styles.pageHeader}>
         <Image
-          style={styles.logo}
+          style={styles.pageLogo}
           source={require("../assets/Logo.png")}
           accessible={true}
           accessibilityLabel={"Little Lemon Logo"}
         />
         <Pressable
-          style={styles.avatar}
+          style={styles.profileButton}
           onPress={() => navigation.navigate("Profile")}
         >
           {userData.image !== "" ? (
-            <Image source={{ uri: userData.image }} style={styles.avatarImage} />
+            <Image source={{ uri: userData.image }} style={styles.profileImage} />
           ) : (
-            <View style={styles.avatarEmpty}>
-              <Text style={styles.avatarEmptyText}>
+            <View style={styles.profileFallback}>
+              <Text style={styles.profileText}>
                 {userData.firstName && Array.from(userData.firstName)[0]}
                 {userData.lastName && Array.from(userData.lastName)[0]}
               </Text>
@@ -156,12 +157,13 @@ const Home = ({ navigation }) => {
           )}
         </Pressable>
       </View>
-      <View style={styles.heroSection}>
-        <Text style={styles.heroHeader}>Little Lemon</Text>
-        <View style={styles.heroBody}>
-          <View style={styles.heroContent}>
-            <Text style={styles.heroHeader2}>Chicago</Text>
-            <Text style={styles.heroText}>
+
+      <View style={styles.heroContainer}>
+        <Text style={styles.heroMainTitle}>Little Lemon</Text>
+        <View style={styles.heroContent}>
+          <View style={styles.heroTextWrapper}>
+            <Text style={styles.heroSubTitle}>Chicago</Text>
+            <Text style={styles.heroParagraph}>
               A cozy Mediterranean place where family traditions meet modern flavors.
             </Text>
           </View>
@@ -177,20 +179,23 @@ const Home = ({ navigation }) => {
           placeholderTextColor="#444"
           onChangeText={handleTextChange}
           value={inputText}
-          style={styles.searchBar}
+          style={styles.heroSearchbar}
           iconColor="#444"
           inputStyle={{ color: "#444" }}
           elevation={0}
         />
       </View>
-      <Text style={styles.delivery}>GET YOUR FAVORITES DELIVERED!</Text>
+
+      <Text style={styles.deliveryBanner}>GET YOUR FAVORITES DELIVERED!</Text>
+
       <Filters
         selections={activeFilters}
         onChange={toggleFilter}
         sections={categories}
       />
+
       <SectionList
-        style={styles.sectionList}
+        style={styles.sectionWrapper}
         sections={menuData}
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
@@ -202,7 +207,7 @@ const Home = ({ navigation }) => {
           />
         )}
         renderSectionHeader={({ section: { name } }) => (
-          <Text style={styles.itemHeader}>{name}</Text>
+          <Text style={styles.sectionHeader}>{name}</Text>
         )}
       />
     </View>
@@ -212,32 +217,32 @@ const Home = ({ navigation }) => {
 export default Home;
 
 const styles = StyleSheet.create({
-  container: {
+  pageRoot: {
     flex: 1,
     backgroundColor: "#fcfcfc",
     paddingTop: 18,
   },
-  header: {
+  pageHeader: {
     padding: 12,
     flexDirection: "row",
     justifyContent: "center",
     backgroundColor: "#d9e0e5",
   },
-  logo: {
+  pageLogo: {
     height: 50,
     width: 150,
     resizeMode: "contain",
   },
-  sectionList: {
+  sectionWrapper: {
     paddingHorizontal: 16,
   },
-  searchBar: {
+  heroSearchbar: {
     marginTop: 15,
     backgroundColor: "#ededed",
     shadowRadius: 0,
     shadowOpacity: 0,
   },
-  item: {
+  dishContainer: {
     flexDirection: "row",
     justifyContent: "space-between",
     alignItems: "center",
@@ -245,45 +250,45 @@ const styles = StyleSheet.create({
     borderTopColor: "#cccccc",
     paddingVertical: 10,
   },
-  itemBody: {
+  dishTextBlock: {
     flex: 1,
   },
-  itemHeader: {
+  sectionHeader: {
     fontSize: 24,
     paddingVertical: 8,
     color: "#46645b",
     backgroundColor: "#fff",
   },
-  name: {
+  dishName: {
     fontSize: 20,
     color: "#111",
     paddingBottom: 5,
   },
-  description: {
+  dishDesc: {
     color: "#46645b",
     paddingRight: 5,
   },
-  price: {
+  dishPrice: {
     fontSize: 20,
     color: "#ed9c72",
     paddingTop: 5,
   },
-  itemImage: {
+  dishImage: {
     width: 100,
     height: 100,
   },
-  avatar: {
+  profileButton: {
     flex: 1,
     position: "absolute",
     right: 10,
     top: 10,
   },
-  avatarImage: {
+  profileImage: {
     width: 50,
     height: 50,
     borderRadius: 25,
   },
-  avatarEmpty: {
+  profileFallback: {
     width: 50,
     height: 50,
     borderRadius: 25,
@@ -291,27 +296,32 @@ const styles = StyleSheet.create({
     alignItems: "center",
     justifyContent: "center",
   },
-  heroSection: {
+  profileText: {
+    color: "#fff",
+    fontSize: 18,
+    fontWeight: "bold",
+  },
+  heroContainer: {
     backgroundColor: "#46645b",
     padding: 15,
   },
-  heroHeader: {
+  heroMainTitle: {
     color: "#e8c914",
     fontSize: 54,
   },
-  heroHeader2: {
+  heroSubTitle: {
     color: "#fdfdfd",
     fontSize: 30,
   },
-  heroText: {
+  heroParagraph: {
     color: "#fdfdfd",
     fontSize: 14,
   },
-  heroBody: {
+  heroContent: {
     flexDirection: "row",
     justifyContent: "space-between",
   },
-  heroContent: {
+  heroTextWrapper: {
     flex: 1,
   },
   heroImage: {
@@ -319,7 +329,7 @@ const styles = StyleSheet.create({
     height: 100,
     borderRadius: 12,
   },
-  delivery: {
+  deliveryBanner: {
     fontSize: 18,
     padding: 15,
   },
